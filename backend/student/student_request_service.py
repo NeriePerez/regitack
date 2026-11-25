@@ -93,6 +93,7 @@ def get_student_requests(user_id):
             connection.close()
 
 
+
 def get_request_details(user_id, request_id):
     connection = None
     cursor = None
@@ -102,27 +103,37 @@ def get_request_details(user_id, request_id):
         cursor = connection.cursor(dictionary=True)
 
         query = """
-            SELECT
+                        SELECT
                 dr.request_id,
                 dr.reference_number,
                 dr.document_id,
                 d.document_name,
                 d.document_code,
+
                 dr.purpose,
                 dr.quantity,
                 dr.status,
                 dr.total_fee,
                 dr.remarks,
+
+                dr.total_fee / dr.quantity AS unit_fee,
+                d.processing_days,
+
                 dr.submitted_at,
                 dr.ready_at,
                 dr.released_at
+
             FROM document_requests dr
+
             INNER JOIN students s
                 ON dr.student_id = s.student_id
+
             INNER JOIN documents d
                 ON dr.document_id = d.document_id
+
             WHERE dr.request_id = %s
               AND s.user_id = %s
+
             LIMIT 1
         """
 
@@ -131,6 +142,8 @@ def get_request_details(user_id, request_id):
 
         if request:
             request["total_fee"] = float(request["total_fee"] or 0)
+            request["unit_fee"] = float(request["unit_fee"] or 0)
+
             request["status_history"] = (
                 get_request_status_history(request_id) or []
             )

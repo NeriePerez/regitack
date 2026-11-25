@@ -898,7 +898,8 @@ async function loadDashboard() {
 
         if (isNaN(date.getTime())) return 'Date unavailable';
 
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString('en-PH', {
+            timeZone: 'UTC',
             month: 'short',
             day: 'numeric',
             year: 'numeric'
@@ -2039,6 +2040,19 @@ async function loadRequestDetail(requestId) {
         }
 
         const request = data.request;
+        console.log('========== COPIES DEBUG ==========');
+        console.log('API RESPONSE:', data);
+        console.log('REQUEST OBJECT:', request);
+        console.log('QUANTITY VALUE:', request?.quantity);
+        console.log('QUANTITY TYPE:', typeof request?.quantity);
+        console.log('COPIES VALUE:', request?.copies);
+
+        const copiesElement = document.getElementById('detailCopies');
+
+        console.log('COPIES ELEMENT:', copiesElement);
+        console.log('COPIES ELEMENT VISIBLE:', copiesElement?.offsetParent !== null);
+        console.log('=================================');
+        
 
         renderRequestDetail(request);
         console.log('QR DATA:', {
@@ -2057,7 +2071,31 @@ async function loadRequestDetail(requestId) {
 }
 
 
+
 function renderRequestDetail(request) {
+    console.log('========== MISSING ELEMENTS ==========');
+
+    [
+        'detailDocumentName',
+        'detailRequestMeta',
+        'detailPurpose',
+        'detailCopies',
+        'detailUnitFee',
+        'detailFee',
+        'detailSubmittedDate',
+        'detailProcessingDays',
+        'detailPickupDate',
+        'detailReferenceNumber',
+        'detailEmail'
+    ].forEach(id => {
+        const element = document.getElementById(id);
+
+        if (!element) {
+            console.error(`MISSING ELEMENT: ${id}`);
+        }
+    });
+
+    console.log('======================================');
 
     // BASIC INFORMATION
     document.getElementById('detailDocumentName').textContent =
@@ -2069,6 +2107,26 @@ function renderRequestDetail(request) {
     document.getElementById('detailPurpose').textContent =
         request.purpose || '--';
 
+    // NUMBER OF COPIES
+    const copies = request.quantity ?? request.copies;
+
+    const copiesElement = document.getElementById('detailCopies');
+
+    if (copiesElement) {
+        copiesElement.textContent =
+            copies != null
+                ? `${copies} `
+                : 'Not available';
+    }
+    // UNIT FEE
+    document.getElementById('detailUnitFee').textContent =
+        request.unit_fee != null
+            ? `₱${Number(request.unit_fee).toLocaleString('en-PH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`
+            : '--';
+
     document.getElementById('detailFee').textContent =
         request.total_fee != null
             ? `₱${Number(request.total_fee).toLocaleString('en-PH', {
@@ -2077,11 +2135,50 @@ function renderRequestDetail(request) {
             })}`
             : '--';
 
-    document.getElementById('detailPickupDate').textContent =
-        request.ready_at || 'Not yet scheduled';
+    // DATE REQUESTED
+    const submittedDateElement =
+        document.getElementById('detailSubmittedDate');
 
-    document.getElementById('detailEmail').textContent =
-        request.email || '--';
+    if (submittedDateElement) {
+        submittedDateElement.textContent =
+            formatRequestDate(request.submitted_at);
+    }
+
+    // PROCESSING TIME
+    document.getElementById('detailProcessingDays').textContent =
+        request.processing_days != null
+            ? `${request.processing_days} ${Number(request.processing_days) === 1 ? 'day' : 'days'}`
+            : '--';
+
+    // PICKUP SCHEDULE
+    document.getElementById('detailPickupDate').textContent =
+        request.ready_at
+            ? formatRequestDate(request.ready_at)
+            : 'Not yet scheduled';
+
+    // REFERENCE NUMBER
+    document.getElementById('detailReferenceNumber').textContent =
+        request.reference_number || '--';
+    
+     // COPY REFERENCE NUMBER
+    const copyButton = document.getElementById('copyReference');
+
+    if (copyButton) {
+        copyButton.onclick = async () => {
+            if (!request.reference_number) return;
+
+            try {
+                await navigator.clipboard.writeText(
+                    request.reference_number
+                );
+
+                copyButton.title = 'Copied!';
+            } catch (error) {
+                console.error('Copy reference error:', error);
+            }
+        };
+    }
+
 
     // STATUS
     const status = (request.status || '')
@@ -2100,12 +2197,28 @@ function renderRequestDetail(request) {
     // EMAIL UPDATES
     renderEmailUpdates(request.email_updates || []);
 
-    console.log('STATUS HISTORY:', request.status_history);
-    console.log('CURRENT STATUS:', request.status);
-    console.log('QR IMAGE:', request.qr_image);
-    console.log('QR EXPIRY:', request.qr_expires_at);
-    console.log('QR REDEEMED:', request.qr_redeemed);
 }
+
+function formatRequestDate(dateValue) {
+    if (!dateValue) return '--';
+
+    const date = new Date(dateValue);
+
+    if (isNaN(date.getTime())) {
+        return dateValue;
+    }
+
+    return date.toLocaleString('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
 
 
 function renderRequestProgress(status) {
@@ -2310,6 +2423,7 @@ function renderRequestActivity(activities) {
 
         date.textContent = activity.changed_at
             ? new Date(activity.changed_at).toLocaleString('en-PH', {
+                timeZone: 'UTC',
                 dateStyle: 'medium',
                 timeStyle: 'short'
             })
@@ -2700,6 +2814,7 @@ if (signupForm) {
     }
 
 
+
     function prepareNewRequestForm(doc) {
         if (!doc) {
             showMessage(
@@ -2716,12 +2831,17 @@ if (signupForm) {
 
         purposeInput.value = '';
 
+        // Display document description
         selectedInfo.textContent =
             doc.description || 'No description available.';
+
+        // Load requirements for the selected document
+        loadRequirements(doc.document_id);
 
         updateFee();
         updateStep(1);
     }
+
 
     window.prepareNewRequestForm = prepareNewRequestForm;
 
@@ -2944,3 +3064,112 @@ if (signupForm) {
     };
 
 })();
+
+async function downloadQRCode() {
+    const qrBox = document.getElementById('qrBox');
+    const qrCode = document.getElementById('qrCode');
+
+    // Find the generated QR element
+    const qrElement =
+        qrBox.querySelector('canvas, img, svg') ||
+        qrCode.querySelector('canvas, img, svg');
+
+    if (!qrElement) {
+        alert('QR code is not available yet.');
+        return;
+    }
+
+    try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const size = 800;
+        const padding = 60;
+
+        canvas.width = size;
+        canvas.height = size;
+
+        // White background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, size, size);
+
+        let image;
+
+        if (qrElement.tagName.toLowerCase() === 'canvas') {
+            image = qrElement;
+        } else {
+            image = new Image();
+
+            if (qrElement.tagName.toLowerCase() === 'svg') {
+                const svgData = new XMLSerializer()
+                    .serializeToString(qrElement);
+
+                image.src = URL.createObjectURL(
+                    new Blob([svgData], {
+                        type: 'image/svg+xml;charset=utf-8'
+                    })
+                );
+            } else {
+                image.src = qrElement.src;
+            }
+
+            await new Promise((resolve, reject) => {
+                image.onload = resolve;
+                image.onerror = reject;
+            });
+        }
+
+        // Keep QR square and centered
+        const availableSize = size - padding * 2;
+        const qrSize = Math.min(
+            availableSize,
+            image.width || image.naturalWidth,
+            image.height || image.naturalHeight
+        );
+
+        const x = (size - qrSize) / 2;
+        const y = (size - qrSize) / 2;
+
+        ctx.imageSmoothingEnabled = false;
+
+        ctx.drawImage(
+            image,
+            0, 0,
+            image.width || image.naturalWidth,
+            image.height || image.naturalHeight,
+            x, y,
+            qrSize, qrSize
+        );
+
+        // Convert to JPEG
+        const jpeg = canvas.toDataURL('image/jpeg', 1.0);
+
+        const link = document.createElement('a');
+        link.href = jpeg;
+        link.download = 'REGITRACK_QR_Pickup_Pass.jpg';
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        if (image.src && image.src.startsWith('blob:')) {
+            URL.revokeObjectURL(image.src);
+        }
+
+    } catch (error) {
+        console.error('QR download error:', error);
+        alert('Unable to download QR code. Please try again.');
+    }
+}
+
+// =====================================
+// SAVE QR BUTTON EVENT
+// =====================================
+
+document.addEventListener('click', function(event) {
+    const saveButton = event.target.closest('#qrSave');
+
+    if (!saveButton) return;
+
+    downloadQRCode();
+});

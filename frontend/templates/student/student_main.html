@@ -448,7 +448,6 @@
           </div>
 
           <button class="btn ol w sm" data-request-view="second">
-              <svg class="i" style="width:16px"><use href="#dl"/></svg>
               View request
           </button>
       </div>
@@ -891,7 +890,7 @@
 
           <!-- REQUEST DETAILS -->
           <div class="card c4" id="requestDetailsCard">
-              <h2 style="margin-bottom:6px">Details</h2>
+              <h2 style="margin-bottom:6px">Request Details</h2>
 
               <div class="kv">
                   <span>Purpose</span>
@@ -899,9 +898,14 @@
               </div>
 
               <div class="kv">
-                  <span>Copies</span>
-                  <b id="detailCopies">1</b>
+                  <span>Number of Copies</span>
+                  <b id="detailCopies">--</b>
               </div>
+
+              <div class="kv">
+                <span>Unit Fee</span>
+                <b id="detailUnitFee">--</b>
+            </div>
 
               <div class="kv">
                   <span>Fee</span>
@@ -909,9 +913,47 @@
               </div>
 
               <div class="kv">
-                  <span>Pickup</span>
+                <span>Date Requested</span>
+                <b id="detailSubmittedDate">--</b>
+            </div>
+
+            <div class="kv">
+                <span>Processing Time</span>
+                <b id="detailProcessingDays">--</b>
+            </div>
+
+              <div class="kv">
+                  <span>Pickup Date</span>
                   <b id="detailPickupDate">Not yet scheduled</b>
               </div>
+
+              <div class="alt kv" style="margin-top:14px">
+                    <span class="mu">Reference Number</span>
+
+                    <div style="display:flex;align-items:center;
+                                justify-content:space-between;gap:8px">
+
+                        <b id="detailReferenceNumber">--</b>
+
+                        <button class="ib"
+                                type="button"
+                                id="copyReference"
+                                title="Copy reference number">
+
+                            <svg class="i" viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="8" y="8" width="13" height="13" rx="2"/>
+                                <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3"/>
+                                <use href="#copy"/>
+                            </svg>
+
+                        </button>
+                    </div>
+                </div>
           </div>
 
         <!-- ACTIVITY TIMELINE -->

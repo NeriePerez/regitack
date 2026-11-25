@@ -1310,3 +1310,25 @@ html body *{-webkit-tap-highlight-color:transparent}
     padding: 0;
     border: none;
 }
+
+#qrPickupCard {
+    text-align: center;
+}
+
+#qrBox,
+#qrCode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#qrBox canvas,
+#qrBox img,
+#qrCode canvas,
+#qrCode img {
+    display: block;
+    margin: 0 auto;
+}
