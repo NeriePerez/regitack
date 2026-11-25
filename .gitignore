@@ -1,0 +1,27 @@
+# Environment secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+
+# IDE files
+.vscode/
+.idea/
+
+# Generated QR codes
+generated/qr_codes/
+
+# Uploaded documents
+uploads/
+
+# Logs
+*.log
+
+# Test cache
+.pytest_cache/
