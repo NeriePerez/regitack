@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Regitrack — Request Page & Approval</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/staff_request_page.css') }}">
+
+  <script defer src="{{ url_for('static', filename='js/staff_request_page.js') }}"></script>
+</head>
+
+<body class="pg-detail">
+
+<div id="v4p"></div>
+
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="top" id="topbar">
+    <a href="dashboard" class="mob-brand">
+      <div class="mark">
+        <svg style="display:none" width="24" height="24" viewBox="0 0 100 100" fill="none">
+          <rect x="42" y="8" width="46" height="56" rx="11" transform="rotate(14 42 8)" fill="#e8faee" stroke="#0b5e2b" stroke-width="5"/>
+          <line x1="49" y1="24" x2="77" y2="31" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="46" y1="34" x2="74" y2="41" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M18 84L28 24H56C71 24 80 33 80 46C80 57 72 65 60 67L78 84H58L42 69H34L31 84H18Z" fill="#0d6e33"/>
+          <path d="M28 24H56C68 24 76 31 76 42C76 51 69 57 58 58H35L28 24Z" fill="#22c55e"/>
+          <path d="M48 33C42.5 33 38 37.3 38 42.6C38 49.4 48 58 48 58C48 58 58 49.4 58 42.6C58 37.3 53.5 33 48 33ZM48 46.2C45.8 46.2 44 44.5 44 42.3C44 40.1 45.8 38.4 48 38.4C50.2 38.4 52 40.1 52 42.3C52 44.5 50.2 46.2 48 46.2Z" fill="#84f038" stroke="#073a22" stroke-width="2"/>
+        </svg>
+      </div>
+      <span class="hb">Regitrack<small class="hsub">Registrar Portal</small></span>
+    </a>
+
+    <div class="srch gs" id="globalSearchWrap">
+      <svg class="i" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="20" y1="20" x2="16.2" y2="16.2"/>
+      </svg>
+      <input id="globalSearchInput" type="search" placeholder="Jump to request ID, student, or listing..." autocomplete="off">
+      <kbd>/</kbd>
+      <div class="sg" id="searchSuggestions"></div>
+    </div>
+
+    <div class="hr">
+      <span class="dchip" id="clk" aria-label="Current date and time"></span>
+
+      <button class="ib" id="themeBtn" title="Toggle Dark/Light Theme" onclick="toggleTheme()">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
+      <div class="pw">
+        <button class="ib" id="notifBtn" title="Registrar Alerts" onclick="togglePop('notifPop', event)">
+          <svg class="i" viewBox="0 0 24 24">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="dot" id="notifDot"></span>
+        </button>
+
+        <div class="pop" id="notifPop">
+          <div class="ph2">
+            <b>Registrar Alerts</b>
+            <button class="lnk" onclick="markAllRead()">Mark all read</button>
+          </div>
+          <div id="notifList"></div>
+        </div>
+      </div>
+
+      <div class="pw">
+        <button class="av" onclick="togglePop('profPop', event)" title="Registrar Profile">RR</button>
+
+        <div class="pop mp" id="profPop">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--bd);margin-bottom:6px">
+            <b style="display:block;font-size:14px">Registrar Staff</b>
+            <span class="mu" style="font-size:12px">registrar@email.com</span>
+          </div>
+
+          <button class="nv" onclick="toggleTheme();closePops()">
+            <svg class="i" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+            </svg>
+            <span>Switch Appearance</span>
+          </button>
+
+          <div style="height:1px;background:var(--bd);margin:6px 0"></div>
+
+          <button class="nv" style="color:#d6392f" onclick="logoutAdmin()">
+            <svg class="i" viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="side" aria-label="Registrar Navigation">
+    <a href="dashboard" class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg style="display:none" width="28" height="28" viewBox="0 0 100 100" fill="none">
+          <rect x="42" y="8" width="46" height="56" rx="11" transform="rotate(14 42 8)" fill="#e8faee" stroke="#0b5e2b" stroke-width="5"/>
+          <line x1="49" y1="24" x2="77" y2="31" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="46" y1="34" x2="74" y2="41" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="43" y1="44" x2="67" y2="50" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M18 84L28 24H56C71 24 80 33 80 46C80 57 72 65 60 67L78 84H58L42 69H34L31 84H18Z" fill="#0d6e33"/>
+          <path d="M28 24H56C68 24 76 31 76 42C76 51 69 57 58 58H35L28 24Z" fill="#22c55e"/>
+          <path d="M48 33C42.5 33 38 37.3 38 42.6C38 49.4 48 58 48 58C48 58 58 49.4 58 42.6C58 37.3 53.5 33 48 33ZM48 46.2C45.8 46.2 44 44.5 44 42.3C44 40.1 45.8 38.4 48 38.4C50.2 38.4 52 40.1 52 42.3C52 44.5 50.2 46.2 48 46.2Z" fill="#84f038" stroke="#073a22" stroke-width="2"/>
+        </svg>
+      </div>
+      <div>
+        Regitrack
+        <span class="brand-sub">Registrar Portal</span>
+      </div>
+    </a>
+
+    <div class="nl">Workspace</div>
+
+    <nav class="nav" id="navMenu">
+      <a class="nv" href="dashboard">
+        <svg class="i" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="2"/>
+          <rect x="14" y="3" width="7" height="7" rx="2"/>
+          <rect x="14" y="14" width="7" height="7" rx="2"/>
+          <rect x="3" y="14" width="7" height="7" rx="2"/>
+        </svg>
+        <span>Main Page</span>
+      </a>
+
+      <a class="nv" href="request_list">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <span>Request List</span>
+        <em class="bg" id="navPendingBadge">5</em>
+      </a>
+
+      <a class="nv on" href="request_page">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        <span>Request Page</span>
+      </a>
+
+      <a class="nv" href="scan.html">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+        </svg>
+        <span>Scan &amp; Claim</span>
+      </a>
+    </nav>
+
+    <div class="sp"></div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+    <main class="scr">
+
+      <div class="hd">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <a class="ib" href="request_list" title="Back to Request List">
+            <svg class="i" viewBox="0 0 24 24">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </a>
+
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <h1 id="detId">REQ-2026-1048</h1>
+              <span class="pill p2" id="detStatusPill">Pending</span>
+            </div>
+            <p class="mu" id="detSubtitle">Submitted on Nov 20, 2026 at 09:14 AM</p>
+          </div>
+        </div>
+
+        <div class="hr">
+          <button class="btn ol sm" onclick="cycleDetailRequest(-1)">← Prev</button>
+          <button class="btn ol sm" onclick="cycleDetailRequest(1)">Next →</button>
+        </div>
+      </div>
+
+      <!-- WORKFLOW STEPPER -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="stp" id="detStepper"></div>
+      </div>
+
+      <div class="dash">
+
+        <!-- APPLICANT INFORMATION -->
+        <div class="card c7">
+          <div class="sec">
+            <h2>Request & Applicant Information</h2>
+            <span class="pill p5" id="detPayPill">Paid • ₱250.00</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;background:var(--mint2);margin-bottom:16px">
+            <div class="av" id="detAvatar" style="width:52px;height:52px;font-size:16px">MC</div>
+            <div style="flex:1;min-width:0">
+              <b style="font-size:16px;display:block" id="detName">Maria Clara Santos</b>
+              <span class="mu" id="detStudentMeta">2022-04819 • BS Computer Science (4th Year)</span>
+            </div>
+          </div>
+
+          <div class="kv"><span>Request Type</span><b id="detType">Transcript of Records</b></div>
+          <div class="kv"><span>Date & Time Submitted</span><b id="detDate">2026-11-20 • 09:14 AM</b></div>
+          <div class="kv"><span>Purpose of Request</span><b id="detPurpose">Board Examination & Employment</b></div>
+          <div class="kv"><span>Copies Requested</span><b id="detCopies">2 Official Copies (Sealed)</b></div>
+          <div class="kv"><span>Delivery / Release Mode</span><b id="detDelivery">Registrar Window Pickup</b></div>
+          <div class="kv"><span>Contact Email</span><b id="detEmail">mc.santos@student.edu.ph</b></div>
+          <div class="kv"><span>Mobile Number</span><b id="detPhone">+63 917 482 1904</b></div>
+          <div class="kv"><span>Payment Reference</span><b id="detRef">OR-994821-GCASH</b></div>
+
+          <div style="margin-top:22px">
+            <h3 style="margin-bottom:10px">Attached Supporting Files</h3>
+            <div id="detAttachments"></div>
+          </div>
+
+          <div class="tl-sec">
+            <div class="sec">
+              <h2>Audit Timeline</h2>
+              <span class="pill p1" id="detLogCount">2 events</span>
+            </div>
+            <div class="tl" id="detTimeline"></div>
+          </div>
+        </div>
+
+        <!-- APPROVAL AND STATUS -->
+        <div class="c5" style="display:grid;gap:24px;align-content:start">
+
+          <div class="card">
+            <div class="sec">
+              <h2>Approval Decision</h2>
+              <span class="mu" style="font-size:12px">Registrar Action</span>
+            </div>
+
+            <p class="mu" style="margin-bottom:14px">
+              Verify attached credentials before approving or issuing remarks to the applicant.
+            </p>
+
+            <div style="margin-bottom:14px">
+              <label for="adminRemarksInput" style="display:block;font-size:13px;font-weight:700;margin-bottom:6px">
+                Registrar Remarks / Release Note
+              </label>
+              <textarea id="adminRemarksInput" class="ta" placeholder="Add verification note, window pickup instructions, or rejection reason..."></textarea>
+            </div>
+
+            <div style="display:grid;gap:10px">
+              <button class="btn w" onclick="decideRequest('Approved')">
+                <svg class="i" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Approve Request</span>
+              </button>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <button class="btn ol w" onclick="decideRequest('In Review')">
+                  <svg class="i" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9"/>
+                    <polyline points="12 7 12 12 15 15"/>
+                  </svg>
+                  <span>Mark In Review</span>
+                </button>
+
+                <button class="btn dn-btn w" onclick="decideRequest('Rejected')">
+                  <svg class="i" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  <span>Reject</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="sec">
+              <h2>Update Status</h2>
+              <span class="pill p1" id="stQr">QR pass: Not issued</span>
+            </div>
+
+            <p class="mu" style="margin-bottom:14px">
+              Move this request through the processing stages. The student is emailed automatically.
+            </p>
+
+            <label for="stSel" style="display:block;font-size:13px;font-weight:700;margin-bottom:6px">
+              Processing stage
+            </label>
+
+            <select id="stSel" style="width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font-weight:600;margin-bottom:12px">
+              <option>Pending</option>
+              <option>In Review</option>
+              <option>Approved</option>
+              <option>Processing</option>
+              <option>Ready for Pickup</option>
+              <option>Released</option>
+              <option>Rejected</option>
+            </select>
+
+            <label style="display:flex;align-items:center;gap:10px;font-size:13.5px;margin-bottom:14px;cursor:pointer">
+              <input type="checkbox" id="stMail" checked style="accent-color:var(--g7);width:16px;height:16px">
+              Send email notification to student
+            </label>
+
+            <button class="btn w" onclick="stApply()">
+              <svg class="i" viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <polyline points="3 7 12 13 21 7"/>
+              </svg>
+              <span>Update status &amp; notify</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- DOCUMENT PREVIEW MODAL -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div id="ts" aria-live="polite"></div>
+
+</body>
+</html>

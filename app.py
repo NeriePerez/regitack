@@ -11,6 +11,7 @@ from backend.auth.auth_service import get_user_by_id
 from backend.student.student_routes import student_bp
 from backend.documents.document_routes import document_bp
 from backend.requests.request_routes import request_bp
+from backend.registrar.registrar_routes import registrar_bp
 
 
 login_manager = LoginManager()
@@ -38,6 +39,7 @@ def create_app():
     app.register_blueprint(student_bp)
     app.register_blueprint(document_bp)
     app.register_blueprint(request_bp)
+    app.register_blueprint(registrar_bp)
 
     @app.route("/")
     def login_page():

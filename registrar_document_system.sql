@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 25, 2026 at 03:46 PM
+-- Generation Time: Nov 26, 2026 at 11:10 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -444,9 +444,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `role_id`, `full_name`, `email`, `password_hash`, `account_status`, `last_login`, `created_at`, `updated_at`) VALUES
-(2, 1, 'Sam Smith Rivera', 'sam@email.com', '$2b$12$pnZguEXVtJZrsIQhZteLcOeIuNkR6GJNiFs2L7.WoavUyHIGRHQL.', 'Active', '2026-11-25 20:43:27', '2026-11-22 12:54:30', '2026-11-25 12:43:27'),
-(3, 2, 'Regitrack Administrator', 'registrar@email.com', '$2b$12$Y8HOJPVxAAxWgr84ObYBMeK02X.nqHPJuCT1sZBjaOnJsi/imyUSm', 'Active', '2026-11-24 07:41:18', '2026-11-22 12:54:30', '2026-11-23 23:41:18'),
-(4, 3, 'Regitrack Administrator', 'admin@regitrack.edu.ph', '$2b$12$Fx00L04y6isAbcMWjQR0kOEab/.A2qYqN9YymRwBOxmP7sKvNlu4S', 'Active', '2026-11-24 07:42:39', '2026-11-22 12:54:30', '2026-11-23 23:42:39'),
+(2, 1, 'Sam Smith Rivera', 'sam@email.com', '$2b$12$pnZguEXVtJZrsIQhZteLcOeIuNkR6GJNiFs2L7.WoavUyHIGRHQL.', 'Active', '2026-11-26 17:40:49', '2026-11-22 12:54:30', '2026-11-26 09:40:49'),
+(3, 2, 'Alyssa Adana', 'registrar@email.com', '$2b$12$Y8HOJPVxAAxWgr84ObYBMeK02X.nqHPJuCT1sZBjaOnJsi/imyUSm', 'Active', '2026-11-26 17:49:41', '2026-11-22 12:54:30', '2026-11-26 09:49:41'),
+(4, 3, 'Daveace Rodriguez', 'admin@regitrack.edu.ph', '$2b$12$Fx00L04y6isAbcMWjQR0kOEab/.A2qYqN9YymRwBOxmP7sKvNlu4S', 'Active', '2026-11-24 07:42:39', '2026-11-22 12:54:30', '2026-11-26 06:47:57'),
 (6, 1, 'Jane Doe', 'jane@email.com', '$2b$12$6.9FK2Z9BPyNPd6LgoQdXu9epoQ0tFy/LY8tDGqxVnu2YxBPmS20.', 'Active', '2026-11-25 22:26:40', '2026-11-24 01:15:49', '2026-11-25 14:26:40');
 
 -- --------------------------------------------------------

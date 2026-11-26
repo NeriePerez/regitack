@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Regitrack — Request List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/staff_request_list.css') }}">
+</head>
+
+<body class="pg-list">
+
+<div id="v4p"></div>
+
+<div class="shell">
+
+    <!-- TOPBAR -->
+    <header class="top" id="topbar">
+
+        <a href="dashboard" class="mob-brand">
+            <div class="mark">
+                <svg style="display:none" width="24" height="24" viewBox="0 0 100 100" fill="none">
+                    <rect x="42" y="8" width="46" height="56" rx="11" transform="rotate(14 42 8)" fill="#e8faee" stroke="#0b5e2b" stroke-width="5"/>
+                    <line x1="49" y1="24" x2="77" y2="31" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+                    <line x1="46" y1="34" x2="74" y2="41" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+                    <path d="M18 84L28 24H56C71 24 80 33 80 46C80 57 72 65 60 67L78 84H58L42 69H34L31 84H18Z" fill="#0d6e33"/>
+                    <path d="M28 24H56C68 24 76 31 76 42C76 51 69 57 58 58H35L28 24Z" fill="#22c55e"/>
+                    <path d="M48 33C42.5 33 38 37.3 38 42.6C38 49.4 48 58 48 58C48 58 58 49.4 58 42.6C58 37.3 53.5 33 48 33ZM48 46.2C45.8 46.2 44 44.5 44 42.3C44 40.1 45.8 38.4 48 38.4C50.2 38.4 52 40.1 52 42.3Z" fill="#84f038" stroke="#073a22" stroke-width="2"/>
+                </svg>
+            </div>
+            <span class="hb">
+                Regitrack
+                <small class="hsub">Registrar Portal</small>
+            </span>
+        </a>
+
+        <div class="srch gs" id="globalSearchWrap">
+            <svg class="i" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="20" y1="20" x2="16.2" y2="16.2"/>
+            </svg>
+            <input id="globalSearchInput" type="search" placeholder="Jump to request ID, student, or listing..." autocomplete="off">
+            <kbd>/</kbd>
+            <div class="sg" id="searchSuggestions"></div>
+        </div>
+
+        <div class="hr">
+            <span class="dchip" id="clk" aria-label="Current date and time"></span>
+
+            <button class="ib" id="themeBtn" title="Toggle Dark/Light Theme" onclick="toggleTheme()">
+                <svg class="i" viewBox="0 0 24 24">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+
+            <div class="pw">
+                <button class="ib" id="notifBtn" title="Registrar Alerts" onclick="togglePop('notifPop', event)">
+                    <svg class="i" viewBox="0 0 24 24">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="dot" id="notifDot"></span>
+                </button>
+
+                <div class="pop" id="notifPop">
+                    <div class="ph2">
+                        <b>Registrar Alerts</b>
+                        <button class="lnk" onclick="markAllRead()">Mark all read</button>
+                    </div>
+                    <div id="notifList"></div>
+                </div>
+            </div>
+
+            <div class="pw">
+                <button class="av" onclick="togglePop('profPop', event)" title="Registrar Profile">RR</button>
+
+                <div class="pop mp" id="profPop">
+                    <div style="padding:10px 12px;border-bottom:1px solid var(--bd);margin-bottom:6px">
+                        <b style="display:block;font-size:14px">Registrar Staff</b>
+                        <span class="mu" style="font-size:12px">registrar@email.com</span>
+                    </div>
+
+                    <button class="nv" onclick="toggleTheme();closePops()">
+                        <svg class="i" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                        </svg>
+                        <span>Switch Appearance</span>
+                    </button>
+
+                    <div style="height:1px;background:var(--bd);margin:6px 0"></div>
+
+                    <button class="nv" style="color:#d6392f" onclick="logoutAdmin()">
+                        <svg class="i" viewBox="0 0 24 24">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Log Out</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="side" aria-label="Registrar Navigation">
+
+        <a href="dashboard" class="brand">
+            <div class="mark" aria-hidden="true">
+                <svg style="display:none" width="28" height="28" viewBox="0 0 100 100" fill="none">
+                    <rect x="42" y="8" width="46" height="56" rx="11" transform="rotate(14 42 8)" fill="#e8faee" stroke="#0b5e2b" stroke-width="5"/>
+                    <line x1="49" y1="24" x2="77" y2="31" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+                    <line x1="46" y1="34" x2="74" y2="41" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+                    <line x1="43" y1="44" x2="67" y2="50" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+                    <path d="M18 84L28 24H56C71 24 80 33 80 46C80 57 72 65 60 67L78 84H58L42 69H34L31 84H18Z" fill="#0d6e33"/>
+                    <path d="M28 24H56C68 24 76 31 76 42C76 51 69 57 58 58H35L28 24Z" fill="#22c55e"/>
+                    <path d="M48 33C42.5 33 38 37.3 38 42.6C38 49.4 48 58 48 58C48 58 58 49.4 58 42.6C58 37.3 53.5 33 48 33ZM48 46.2C45.8 46.2 44 44.5 44 42.3C44 40.1 45.8 38.4 48 38.4C50.2 38.4 52 40.1 52 42.3Z" fill="#84f038" stroke="#073a22" stroke-width="2"/>
+                </svg>
+            </div>
+            <div>
+                Regitrack
+                <span class="brand-sub">Registrar Portal</span>
+            </div>
+        </a>
+
+        <div class="nl">Workspace</div>
+
+        <nav class="nav" id="navMenu">
+
+            <a class="nv" href="dashboard">
+                <svg class="i" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="2"/>
+                    <rect x="14" y="3" width="7" height="7" rx="2"/>
+                    <rect x="14" y="14" width="7" height="7" rx="2"/>
+                    <rect x="3" y="14" width="7" height="7" rx="2"/>
+                </svg>
+                <span>Main Page</span>
+            </a>
+
+            <a class="nv on" href="request_list">
+                <svg class="i" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <span>Request List</span>
+                <em class="bg" id="navPendingBadge">5</em>
+            </a>
+
+            <a class="nv" href="request_page">
+                <svg class="i" viewBox="0 0 24 24">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <span>Request Page</span>
+            </a>
+
+            <a class="nv" href="scan.html">
+                <svg class="i" viewBox="0 0 24 24">
+                    <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>
+                    <line x1="4" y1="12" x2="20" y2="12"/>
+                </svg>
+                <span>Scan &amp; Claim</span>
+            </a>
+
+        </nav>
+
+        <div class="sp"></div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="content">
+        <main class="scr">
+
+            <div class="hd">
+                <div>
+                    <h1>Request List</h1>
+                    <p class="mu">Filter and manage all submitted student document and clearance requests.</p>
+                </div>
+
+                <div class="hr">
+                    <button class="btn ol sm" onclick="exportCSV()">
+                        <svg class="i" style="width:16px;height:16px" viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span>Export CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="filter-bar">
+
+                <div class="srch">
+                    <svg class="i" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="7"/>
+                        <line x1="20" y1="20" x2="16.2" y2="16.2"/>
+                    </svg>
+                    <input id="reqSearchInput" type="search" placeholder="Search ID, student name, or student #..." oninput="renderRequestList()">
+                </div>
+
+                <div class="fg">
+                    <label for="filterType">Type:</label>
+                    <select id="filterType" class="sel" onchange="renderRequestList()">
+                        <option value="all">All Request Types</option>
+                    </select>
+                </div>
+
+                <div class="fg">
+                    <label for="filterDatePreset">Date:</label>
+                    <select id="filterDatePreset" class="sel" onchange="applyDatePreset()">
+                        <option value="all">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="fg" id="customDateInputs">
+                    <input type="date" id="filterDateFrom" class="dinp" title="From Date" onchange="onCustomDateChange()">
+                    <span class="mu">to</span>
+                    <input type="date" id="filterDateTo" class="dinp" title="To Date" onchange="onCustomDateChange()">
+                </div>
+
+                <button class="btn ol sm" onclick="resetRequestFilters()">Reset</button>
+            </div>
+
+            <!-- STATUS FILTERS -->
+            <div class="chips" id="statusChips">
+                <button class="chip on" data-st="all" onclick="setStatusFilter('all', this)">All Requests</button>
+                <button class="chip" data-st="Pending" onclick="setStatusFilter('Pending', this)">Pending</button>
+                <button class="chip" data-st="In Review" onclick="setStatusFilter('In Review', this)">In Review</button>
+                <button class="chip" data-st="Approved" onclick="setStatusFilter('Approved', this)">Approved</button>
+                <button class="chip" data-st="Rejected" onclick="setStatusFilter('Rejected', this)">Rejected</button>
+            </div>
+
+            <!-- REQUEST TABLE -->
+            <div class="card">
+
+                <div class="sec">
+                    <h2 id="reqListTitle">Showing All Requests</h2>
+                    <span class="mu" id="reqCountLabel">0 requests</span>
+                </div>
+
+                <div class="tw" id="reqTableWrap">
+                    <table class="tb">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Applicant</th>
+                                <th>Request Type</th>
+                                <th>Date Submitted</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                                <th style="text-align:right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reqTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="emp" id="reqEmptyState" hidden>
+                    <svg class="i" style="width:36px;height:36px;color:var(--g7)" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="7"/>
+                        <line x1="20" y1="20" x2="16.2" y2="16.2"/>
+                    </svg>
+                    <b>No matching requests found</b>
+                    <p class="mu">Try adjusting your date range, request type, or search keywords.</p>
+                    <button class="btn sm" onclick="resetRequestFilters()">Clear All Filters</button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<div id="ts" aria-live="polite"></div>
+
+<script src="{{ url_for('static', filename='js/staff_request_list.js') }}" defer></script>
+
+</body>
+</html>
