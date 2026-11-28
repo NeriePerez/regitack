@@ -242,15 +242,13 @@ def get_registrar_dashboard(user_id):
                     TIMESTAMPDIFF(
                         MINUTE,
                         submitted_at,
-                        released_at
+                        ready_at
                     )
                 ) AS average_minutes
 
             FROM document_requests
 
-            WHERE status = 'Released'
-              AND released_at IS NOT NULL
-              AND submitted_at IS NOT NULL
+            WHERE ready_at IS NOT NULL
             """
         )
 
@@ -281,6 +279,104 @@ def get_registrar_dashboard(user_id):
         print("Registrar dashboard service error:", error)
 
         return None, "Unable to retrieve dashboard information."
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if connection:
+            connection.close()
+
+
+
+def get_registrar_requests(user_id):
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # ==========================================
+        # 1. VERIFY REGISTRAR STAFF ACCOUNT
+        # ==========================================
+
+        cursor.execute(
+            """
+            SELECT r.role_name
+            FROM users u
+            INNER JOIN roles r ON u.role_id = r.role_id
+            WHERE u.user_id = %s
+              AND u.account_status = 'Active'
+            LIMIT 1
+            """,
+            (user_id,)
+        )
+
+        user = cursor.fetchone()
+
+        if not user or user["role_name"] != "Registrar Staff":
+            return None, "You are not authorized to access registrar requests."
+
+        # ==========================================
+        # 2. FETCH ALL DOCUMENT REQUESTS
+        # ==========================================
+
+        cursor.execute(
+            """
+            SELECT
+                dr.request_id,
+                dr.reference_number,
+                dr.status,
+                dr.quantity,
+                dr.submitted_at,
+
+                s.student_number,
+                u.full_name AS student_name,
+
+                d.document_name,
+                dr.total_fee
+
+            FROM document_requests dr
+
+            INNER JOIN students s
+                ON dr.student_id = s.student_id
+
+            INNER JOIN users u
+                ON s.user_id = u.user_id
+
+            INNER JOIN documents d
+                ON dr.document_id = d.document_id
+
+            ORDER BY
+                dr.submitted_at DESC,
+                dr.request_id DESC
+            """
+        )
+
+        requests = cursor.fetchall()
+
+        # ==========================================
+        # 3. FORMAT DATA FOR JSON
+        # ==========================================
+
+        for request in requests:
+
+            submitted_at = request.get("submitted_at")
+
+            if submitted_at:
+                request["submitted_at"] = submitted_at.strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+
+            request["total_fee"] = float(request["total_fee"] or 0)
+
+        return requests, None
+
+    except Exception as error:
+        print("Registrar request list service error:", error)
+
+        return None, "Unable to retrieve document requests."
 
     finally:
         if cursor:

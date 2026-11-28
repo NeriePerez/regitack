@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Regitrack — Analytics & Reporting</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_analytics.css') }}">
+</head>
+<body class="pg-dash">
+
+<div id="v4p"></div>
+
+<div class="shell">
+<header class="top" id="topbar">
+      <a href="dashboard" class="mob-brand">
+        <div class="mark">
+          <svg style="display:none" width="24" height="24" viewBox="0 0 100 100" fill="none">
+            <rect x="42" y="8" width="46" height="56" rx="11" transform="rotate(14 42 8)" fill="#e8faee" stroke="#0b5e2b" stroke-width="5"/>
+            <line x1="49" y1="24" x2="77" y2="31" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+            <line x1="46" y1="34" x2="74" y2="41" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M18 84L28 24H56C71 24 80 33 80 46C80 57 72 65 60 67L78 84H58L42 69H34L31 84H18Z" fill="#0d6e33"/>
+            <path d="M28 24H56C68 24 76 31 76 42C76 51 69 57 58 58H35L28 24Z" fill="#22c55e"/>
+            <path d="M48 33C42.5 33 38 37.3 38 42.6C38 49.4 48 58 48 58C48 58 58 49.4 58 42.6C58 37.3 53.5 33 48 33ZM48 46.2C45.8 46.2 44 44.5 44 42.3C44 40.1 45.8 38.4 48 38.4C50.2 38.4 52 40.1 52 42.3C52 44.5 50.2 46.2 48 46.2Z" fill="#84f038" stroke="#073a22" stroke-width="2"/>
+          </svg>
+        </div>
+        <span class="hb">Regitrack<small class="hsub">Admin Portal</small></span>
+      </a>
+
+      <div class="srch gs" id="globalSearchWrap" hidden>
+        <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.2" y2="16.2"/></svg>
+        <input id="globalSearchInput" type="search" placeholder="Jump to request ID, student, or listing..." autocomplete="off">
+        <kbd>/</kbd>
+        <div class="sg" id="searchSuggestions"></div>
+      </div>
+
+      <div class="hr"><span class="dchip" id="clk" aria-label="Current date and time"></span>
+        <button class="ib" id="themeBtn" title="Toggle Dark/Light Theme" onclick="toggleTheme()">
+          <svg class="i" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+
+        <div class="pw">
+          <button class="ib" id="notifBtn" title="Admin Alerts" onclick="togglePop('notifPop', event)">
+            <svg class="i" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="dot" id="notifDot"></span>
+          </button>
+          <div class="pop" id="notifPop">
+            <div class="ph2">
+              <b>Admin Alerts</b>
+              <button class="lnk" onclick="markAllRead()">Mark all read</button>
+            </div>
+            <div id="notifList"></div>
+          </div>
+        </div>
+
+        <div class="pw">
+          <button class="av" id="adminInitials" onclick="togglePop('profPop', event)" title="Admin Profile">--</button>
+          <div class="pop mp" id="profPop">
+            <div style="padding:10px 12px;border-bottom:1px solid var(--bd);margin-bottom:6px">
+              <b style="display:block;font-size:14px">{{ current_user.full_name }}</b>
+              <span class="mu" style="font-size:12px">System Administrator</span>
+              <span class="mu" style="font-size:12px">{{ current_user.email }}</span>
+            </div>
+            <button class="nv" onclick="exportCSV();closePops()">
+              <svg class="i" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export Requests CSV</span>
+            </button>
+            <button class="nv" onclick="toggleTheme();closePops()">
+              <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+              <span>Switch Appearance</span>
+            </button>
+            <div style="height:1px;background:var(--bd);margin:6px 0"></div>
+            <button class="nv" style="color:#d6392f" onclick="logoutAdmin()">
+              <svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Log Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+  <!-- ================= SIDEBAR NAVIGATION ================= -->
+  <aside class="side" aria-label="Admin Navigation">
+    <a href="dashboard" class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg style="display:none" width="28" height="28" viewBox="0 0 100 100" fill="none">
+          <rect x="42" y="8" width="46" height="56" rx="11" transform="rotate(14 42 8)" fill="#e8faee" stroke="#0b5e2b" stroke-width="5"/>
+          <line x1="49" y1="24" x2="77" y2="31" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="46" y1="34" x2="74" y2="41" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="43" y1="44" x2="67" y2="50" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M18 84L28 24H56C71 24 80 33 80 46C80 57 72 65 60 67L78 84H58L42 69H34L31 84H18Z" fill="#0d6e33"/>
+          <path d="M28 24H56C68 24 76 31 76 42C76 51 69 57 58 58H35L28 24Z" fill="#22c55e"/>
+          <path d="M48 33C42.5 33 38 37.3 38 42.6C38 49.4 48 58 48 58C48 58 58 49.4 58 42.6C58 37.3 53.5 33 48 33ZM48 46.2C45.8 46.2 44 44.5 44 42.3C44 40.1 45.8 38.4 48 38.4C50.2 38.4 52 40.1 52 42.3C52 44.5 50.2 46.2 48 46.2Z" fill="#84f038" stroke="#073a22" stroke-width="2"/>
+        </svg>
+      </div>
+      <div>
+        Regitrack
+        <span class="brand-sub">Admin Portal</span>
+      </div>
+    </a>
+
+    <div class="nl">Workspace</div>
+    <nav class="nav" id="navMenu"><a class="nv on" href="dashboard"><svg class="i" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Analytics &amp; Reporting</span></a><a class="nv" href="users"><svg class="i" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Users &amp; Roles</span></a><a class="nv" href="logs"><svg class="i" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg><span>Audit Log</span></a><a class="nv" href="settings"><svg class="i" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg><span>System Settings</span></a></nav>
+
+    <div class="sp"></div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT AREA ================= -->
+  <div class="content">
+    
+
+    <!-- ================= ANALYTICS DASHBOARD CONTENT ================= -->
+    <main class="scr">
+      <div class="hd">
+        <div>
+          <h1>Analytics &amp; Reporting</h1>
+          <p class="mu">Visual reports and summaries of registrar operations and document request activity.</p>
+        </div>
+        <div class="hr">
+          <div class="chips" style="margin:0">
+            <button class="chip on" onclick="setDashRange('7D', this)">7D</button>
+            <button class="chip" onclick="setDashRange('30D', this)">30D</button>
+            <button class="chip" onclick="setDashRange('12M', this)">12M</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash">
+        <!-- 4 Primary KPI Cards -->
+        <div class="c12 stats" id="fullDashStats"></div>
+
+        <!-- Bar Chart: Request Volume & Approvals -->
+        <div class="card c8">
+          <div class="sec">
+            <div>
+              <h2>Request Volume & Approval Trend</h2>
+              <p class="mu" id="dashChartSub">Daily submitted vs. approved requests over the last 7 days</p>
+            </div>
+            <div style="display:flex;gap:14px;font-size:12.5px;font-weight:700">
+              <span style="display:inline-flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:var(--g7);display:inline-block"></i>Submitted</span>
+              <span style="display:inline-flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:var(--or);display:inline-block"></i>Approved</span>
+            </div>
+          </div>
+          <svg id="dashBarChart" viewBox="0 0 640 240" style="width:100%;height:auto;overflow:visible"></svg>
+        </div>
+
+        <!-- Donut Chart: Breakdown by Request Type -->
+        <div class="card c4">
+          <div class="sec">
+            <h2>By Request Type</h2>
+            <span class="mu" style="font-size:12px">Share</span>
+          </div>
+          <div class="dn" id="dashDonutWrap"></div>
+          <div class="lg" id="dashDonutLegend"></div>
+        </div>
+
+        <!-- Department SLA & Turnaround Progress -->
+        <div class="card c6">
+          <div class="sec">
+            <div>
+              <h2>Processing SLA by Document Type</h2>
+              <p class="mu">Percentage of requests completed within 24h target</p>
+            </div>
+            <span class="pill p4">94.8% Overall</span>
+          </div>
+          <div id="dashSlaBars"></div>
+        </div>
+
+        <!-- Live Admin Activity Feed -->
+        <div class="card c6">
+          <div class="sec">
+            <div>
+              <h2>Live Admin Feed</h2>
+              <p class="mu">Real-time approvals, reviews & student submissions</p>
+            </div>
+            <span class="lv">Live</span>
+          </div>
+          <div id="dashLiveFeed"></div>
+        </div>
+        <div class="card c12 flush" id="reportsCard">
+          <div class="sec"><div><h2>Reports</h2><p class="mu">Summaries of registrar operations and document request activity</p></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><select id="rptType" class="dinp" onchange="renderReport()"><option value="status">Requests by Status</option><option value="type">By Document Type</option><option value="daily">Daily Activity</option><option value="program">By Program</option><option value="fees">Fees Collected</option><option value="aging">Pending Request Aging</option><option value="qr">QR Pickup Passes</option></select><button class="btn ol sm" onclick="exportReport()"><span>Export CSV</span></button><button class="btn ol sm" onclick="window.print()"><span>Print</span></button></div></div>
+          <div style="overflow-x:auto"><table id="rptTable"></table></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="ts" aria-live="polite"></div>
+
+<script src="{{ url_for('static', filename='js/admin_analytics.js') }}"></script>
+
+</body>
+</html>

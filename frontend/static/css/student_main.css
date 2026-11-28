@@ -273,8 +273,8 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--g7) 40%,transp
 .auth>.ap>.brand{padding:0}.auth>.ap>p.mu{display:none}
 .auth>.ap h1{font-size:clamp(32px,9vw,42px)}.auth .fl{margin-top:22px;gap:10px}.auth .fl li{padding:12px 14px}
 .auth>.af{min-height:100vh;min-height:100svh}.mb{display:none}
-.ap>.dn{display:flex;flex-direction:column;align-items:center;gap:8px;position:absolute;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));translate:-50% 0;background:none;border:0;color:#fff;font-weight:700;font-size:13px;z-index:2}
-.dn svg{width:46px;height:46px;padding:12px;border-radius:50%;background:var(--or);color:#2a1500;rotate:90deg;box-shadow:0 12px 24px -8px #f5871fcc;animation:nd 1.8s ease-in-out infinite}
+.ap>.dn{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;left:50%;bottom:0px;translate:-50% 0;background:none;border:0;color:#fff;font-weight:700;font-size:13px;z-index:2}
+.dn svg{width:46px;height:46px;padding:12px;border-radius:50%;background:var(--bg);color:#878481;rotate:90deg;box-shadow:0 12px 24px -8px #f5871fcc;animation:nd 1.8s ease-in-out infinite}
 @keyframes nd{50%{translate:0 7px}}
 .side{background:color-mix(in srgb,var(--g9) 94%,transparent);border:1px solid #ffffff1f}.nv:hover,.stat:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

@@ -1,0 +1,392 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <title>{% block title %}Admin{% endblock %} | RegiTrack</title>
+
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin_base.css') }}">
+
+
+    {% block styles %}{% endblock %}
+    {% block head %}{% endblock %}
+</head>
+
+<body class="pg-admin">
+
+<div class="shell">
+
+    <!-- TOPBAR -->
+
+    <header class="top" id="topbar">
+
+        <!-- MOBILE BRAND -->
+        <a href="{{ url_for('admin.admin_analytics_page') }}" class="mob-brand">
+            <div class="mark">
+                <span>R</span>
+            </div>
+
+            <span class="hb">
+                Regitrack
+                <small class="hsub">Admin Portal</small>
+            </span>
+        </a>
+
+
+        <!-- GLOBAL SEARCH -->
+        <div class="srch gs" id="globalSearchWrap" hidden>
+
+            <svg class="i" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="20" y1="20" x2="16.2" y2="16.2"/>
+            </svg>
+
+            <input
+                id="globalSearchInput"
+                type="search"
+                placeholder="Jump to request ID, student, or listing..."
+                autocomplete="off">
+
+            <kbd>/</kbd>
+
+            <div class="sg" id="searchSuggestions"></div>
+        </div>
+
+
+        <!-- TOPBAR CONTROLS -->
+        <div class="hr">
+
+            <!-- LIVE DATE AND TIME -->
+            <span class="dchip"
+                id="clk"
+                aria-label="Current date and time">
+            </span>
+
+
+            <!-- THEME TOGGLE -->
+            <button class="ib"
+                    id="themeBtn"
+                    type="button"
+                    title="Toggle Dark/Light Theme"
+                    aria-label="Toggle theme"
+                    onclick="toggleTheme()">
+
+                <svg class="i" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3
+                            7 7 0 0 0 21 12.79z"/>
+                </svg>
+
+            </button>
+
+
+            <!-- ADMIN NOTIFICATIONS -->
+            <div class="pw">
+
+                <button class="ib"
+                        id="notifBtn"
+                        type="button"
+                        title="Admin Alerts"
+                        aria-label="Open admin notifications"
+                        aria-expanded="false"
+                        onclick="togglePop('notifPop', event)">
+
+                    <svg class="i" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+
+                        <path d="M18 8A6 6 0 0 0 6 8
+                                c0 7-3 9-3 9h18s-3-2-3-9"/>
+
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+
+                    </svg>
+
+                    <span class="dot" id="notifDot" hidden></span>
+
+                </button>
+
+
+                <!-- NOTIFICATION DROPDOWN -->
+                <div class="pop" id="notifPop">
+
+                    <div class="ph2">
+                        <b>Admin Alerts</b>
+
+                        <button class="lnk"
+                                type="button"
+                                id="markAllReadBtn"
+                                onclick="markAllRead()">
+
+                            Mark all read
+
+                        </button>
+                    </div>
+
+
+                    <div id="notifList">
+
+                        <div class="ni-empty mu">
+                            No new notifications
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ADMIN PROFILE -->
+            <div class="pw">
+
+                <button class="av"
+                        id="adminInitials"
+                        type="button"
+                        onclick="togglePop('profPop', event)"
+                        title="Admin Profile"
+                        aria-label="Open admin profile">
+
+                    {{ current_user.full_name[:2]|upper }}
+
+                </button>
+
+
+                <div class="pop mp" id="profPop">
+
+                    <div class="profile-info"
+                        style="padding:10px 12px;
+                                border-bottom:1px solid var(--bd);
+                                margin-bottom:6px;">
+
+                        <b style="display:block;font-size:14px;">
+                            {{ current_user.full_name }}
+                        </b>
+
+                        <span class="mu" style="font-size:12px;">
+                            System Administrator
+                        </span>
+
+                        <span class="mu" style="font-size:12px;">
+                            {{ current_user.email }}
+                        </span>
+
+                    </div>
+
+
+                    {% if active_page == 'analytics' %}
+                    <button class="nv"
+                            type="button"
+                            onclick="exportCSV();closePops()">
+
+                        <svg class="i" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5
+                                    a2 2 0 0 1-2-2v-4"/>
+
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+
+                        </svg>
+
+                        <span>Export Requests CSV</span>
+
+                    </button>
+                    {% endif %}
+
+
+                    <button class="nv"
+                            type="button"
+                            onclick="toggleTheme();closePops()">
+
+                        <svg class="i" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor"
+                            stroke-width="2">
+
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+
+                        </svg>
+
+                        <span>Switch Appearance</span>
+
+                    </button>
+
+
+                    <div style="height:1px;
+                                background:var(--bd);
+                                margin:6px 0;">
+                    </div>
+
+
+                    <button class="nv logout-link"
+                            type="button"
+                            onclick="logoutAdmin()">
+
+                        <svg class="i" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5
+                                    a2 2 0 0 1 2-2h4"/>
+
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+
+                        </svg>
+
+                        <span>Log Out</span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- SIDEBAR -->
+    <aside class="side" aria-label="Admin Navigation">
+
+        <div class="nl">Workspace</div>
+
+        <nav class="nav" id="navMenu">
+
+            {% if 'view_reports' in permissions %}
+            <a href="{{ url_for('admin.admin_analytics_page') }}"
+               class="nv {% if active_page == 'analytics' %}on{% endif %}">
+
+                <svg class="i" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round">
+
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+
+                </svg>
+
+                <span>Analytics &amp; Reporting</span>
+            </a>
+            {% endif %}
+
+
+            {% if 'manage_users' in permissions %}
+            <a href="{{ url_for('admin.admin_users_page') }}"
+               class="nv {% if active_page == 'users' %}on{% endif %}">
+
+                <svg class="i" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5
+                             a4 4 0 0 0-4 4v2"/>
+
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+
+                </svg>
+
+                <span>Users &amp; Roles</span>
+            </a>
+            {% endif %}
+
+
+            {% if 'view_audit_logs' in permissions %}
+            <a href="{{ url_for('admin.admin_logs_page') }}"
+               class="nv {% if active_page == 'logs' %}on{% endif %}">
+
+                <svg class="i" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12
+                             a2 2 0 0 0 2 2h10
+                             a2 2 0 0 0 2-2V7
+                             a2 2 0 0 0-2-2h-2"/>
+
+                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                    <line x1="9" y1="12" x2="15" y2="12"/>
+                    <line x1="9" y1="16" x2="15" y2="16"/>
+
+                </svg>
+
+                <span>Audit Log</span>
+            </a>
+            {% endif %}
+
+
+            {% if 'manage_system_settings' in permissions %}
+            <a href="{{ url_for('admin.admin_settings_page') }}"
+               class="nv {% if active_page == 'settings' %}on{% endif %}">
+
+                <svg class="i" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round">
+
+                    <line x1="4" y1="21" x2="4" y2="14"/>
+                    <line x1="4" y1="10" x2="4" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12" y2="3"/>
+                    <line x1="20" y1="21" x2="20" y2="16"/>
+                    <line x1="20" y1="12" x2="20" y2="3"/>
+                    <line x1="1" y1="14" x2="7" y2="14"/>
+                    <line x1="9" y1="8" x2="15" y2="8"/>
+                    <line x1="17" y1="16" x2="23" y2="16"/>
+
+                </svg>
+
+                <span>System Settings</span>
+            </a>
+            {% endif %}
+
+        </nav>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="content">
+        <main class="scr">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+</div>
+
+
+<!-- SHARED TOAST CONTAINER -->
+<div id="ts" aria-live="polite"></div>
+
+
+<!-- SHARED JAVASCRIPT -->
+<script src="{{ url_for('static', filename='js/admin_base.js') }}"></script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+
+{% extends "admin/base.html" %}
+
+{% block title %}Audit Logs{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_logs.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= PAGE HEADER ================= -->
+<div class="hd audit-header">
+    <div>
+        <h1>Audit Logs</h1>
+        <p class="mu">
+            Review recorded system activities and administrative actions.
+        </p>
+    </div>
+
+    <div class="hr audit-header-actions">
+        <button class="btn or sm" type="button" id="exportLogsButton">
+            Export CSV
+        </button>
+    </div>
+</div>
+
+<div id="logsMessage" class="audit-message" hidden></div>
+
+
+<!-- ================= AUDIT LOG CONTENT ================= -->
+<div class="dash">
+    <div class="card flush c12" id="auditLogsCard">
+
+        <!-- CARD HEADER -->
+        <div class="sec">
+            <div>
+                <h2>System Activity History</h2>
+                <p class="mu">
+                    Records are retrieved directly from the audit log database.
+                </p>
+            </div>
+
+            <div class="tools">
+                <!-- SEARCH AND ACTION FILTER -->
+                <div class="tools audit-controls">
+
+                    <input
+                        class="dinp"
+                        id="logSearch"
+                        type="search"
+                        placeholder="Search actor, action, or details..."
+                        aria-label="Search audit activities"
+                    >
+
+                    <select
+                        class="dinp"
+                        id="logActionFilter"
+                        aria-label="Filter by action type"
+                    >
+                        <option value="">All Action Types</option>
+                    </select>
+
+                </div>
+            </div>
+        </div>
+
+        
+
+        <!-- RECORD COUNT -->
+        <div class="audit-count mu" id="logsCount" style="padding-left: 20px;">
+            Loading audit records...
+        </div>
+
+        <!-- TABLE -->
+        <div class="tscroll">
+            <table class="tbl audit-table">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Actor</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+
+                <tbody id="logsTableBody">
+                    <tr>
+                        <td colspan="4" class="mu">
+                            Loading audit records...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin_logs.js') }}"></script>
+{% endblock %}

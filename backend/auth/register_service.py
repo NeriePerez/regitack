@@ -3,6 +3,15 @@ import re
 from db_connection import get_connection
 from backend.auth.password_handler import hash_password
 
+def _write_audit(cursor, user_id, actor_email, action, details):
+    cursor.execute(
+        """
+        INSERT INTO audit_logs
+            (user_id, actor_email, action, details)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (user_id, actor_email, action, details)
+    )
 
 def register_student(full_name, student_number, program, year_level, email, password):
 
@@ -163,6 +172,22 @@ def register_student(full_name, student_number, program, year_level, email, pass
         )
 
         student_id = cursor.lastrowid
+
+        # =====================================
+        # 9. WRITE AUDIT LOG
+        # =====================================
+
+        detail = (
+            f"{full_name}({program}) created an account."
+        )
+
+        _write_audit(
+            cursor,
+            user_id,
+            email,
+            "Student account creation",
+            detail
+        )
 
         # =====================================
         # 9. COMMIT BOTH INSERTIONS

@@ -1,0 +1,203 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Users &amp; Roles{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_users.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= MAIN PAGE CONTENT ================= -->
+<main>
+
+    <!-- Page Header -->
+    <div class="hd">
+        <div>
+            <h1>Users &amp; Roles</h1>
+            <p class="mu">
+                Manage system users and their access permissions across the Student, Registrar Staff, and Admin roles.
+            </p>
+        </div>
+        <div class="hr">
+            <button class="btn or sm" type="button" onclick="openAddUser()">
+                <span>Add User</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- User Statistics -->
+
+
+        <div class="c12" id="usersSec">
+
+            <div class="stats" id="uStats">
+                <div class="stat card">
+                    <div class="ic">
+                        <svg class="i" viewBox="0 0 24 24">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <b id="totalUsers">—</b>
+                        <span class="mu">Total Users</span>                 
+                    </div>
+                </div>
+
+                <div class="stat card">
+                    <div class="ic">
+                        <svg class="i" viewBox="0 0 24 24">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <b id="studentUsers">—</b>
+                        <span class="mu">Students</span>                 
+                    </div>
+                </div>
+
+                <div class="stat card">
+                    <div class="ic">
+                        <svg class="i" viewBox="0 0 24 24">
+                            <rect x="2" y="7" width="20" height="14" rx="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <b id="registrarUsers">—</b>
+                        <span class="mu">Registrar Staff</span>                 
+                    </div>
+                </div>
+
+                <div class="stat card">
+                    <div class="ic">
+                        <svg class="i" viewBox="0 0 24 24">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <b id="adminUsers">—</b>
+                        <span class="mu">Admins</span>                 
+                    </div>     
+                </div>
+            </div>
+
+
+            <!-- System Users -->
+            <div class="card flush" style="margin-top:20px">
+
+                <div class="sec">
+                    <div>
+                        <h2>System Users</h2>
+                        <p class="mu">Change roles, activate or deactivate accounts</p>
+                    </div>
+
+                    <div class="tools">
+                        <input
+                            id="userSearch"
+                            class="dinp"
+                            type="search"
+                            placeholder="Search name or email..."
+                        >
+
+                        <select id="roleFilter" class="dinp">
+                            <option value="">All roles</option>
+                        </select>
+
+                        <select id="statusFilter" class="dinp">
+                            <option value="">All statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+
+                        <button
+                            class="btn sm"
+                            type="button"
+                            id="clearFilters">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ulist" id="usersTableBody">
+                    <div class="mu" style="padding:18px 20px">
+                        Loading users...
+                    </div>
+                </div>
+
+                <p class="mu" id="usersCount" style="padding:14px 18px;">
+                    Loading account count...
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- Role Information and Guidelines -->
+        <div class="dash" style="margin-top:20px">
+
+            <!-- Available System Roles -->
+            <div class="c8">
+                <div class="card flush">
+                    <div class="sec">
+                        <div>
+                            <h2>Available System Roles</h2>
+                            <p class="mu">
+                                Roles determine access to system features.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="rolesList" style="padding:18px">
+                        Loading roles...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Management Guidelines -->
+            <div class="c4">
+                <div class="card flush">
+                    <div class="sec">
+                        <div>
+                            <h2>Account Management Guidelines</h2>
+                            <p class="mu">
+                                Recommended account management practices
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="padding:18px">
+                        <ul style="padding-left:20px;line-height:1.9;font-size:13px">
+                            <li>Assign only the role required by the user's responsibilities.</li>
+                            <li>Use a temporary password of at least eight characters.</li>
+                            <li>Deactivate accounts instead of deleting historical records.</li>
+                            <li>Keep at least one active administrator account.</li>
+                            <li>Password changes and account updates are recorded in the audit log.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+</main>
+
+<!-- ================= MODAL ================= -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- ================= TOAST ================= -->
+<div id="ts" aria-live="polite"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin_users.js') }}"></script>
+{% endblock %}

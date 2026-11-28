@@ -58,6 +58,15 @@ def get_user_by_id(user_id):
         if connection:
             connection.close()
 
+def _write_audit(cursor, user_id, actor_email, action, details):
+    cursor.execute(
+        """
+        INSERT INTO audit_logs
+            (user_id, actor_email, action, details)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (user_id, actor_email, action, details)
+    )
 
 def authenticate_user(email, password):
     connection = None
@@ -107,6 +116,22 @@ def authenticate_user(email, password):
         cursor.execute(
             update_query,
             (user_data["user_id"],)
+        )
+
+         # =====================================
+        # 2. WRITE LOGIN AUDIT LOG
+        # =====================================
+
+        detail = (
+            f"{user_data['full_name']}({user_data['role_name']}) logged in successfully."
+        )
+
+        _write_audit(
+            cursor,
+            user_data["user_id"],
+            user_data["email"],
+            "User login",
+            detail
         )
 
         connection.commit()

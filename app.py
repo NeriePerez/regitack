@@ -13,6 +13,8 @@ from backend.documents.document_routes import document_bp
 from backend.requests.request_routes import request_bp
 from backend.registrar.registrar_routes import registrar_bp
 
+from backend.admin.admin_routes import admin_bp
+
 
 login_manager = LoginManager()
 
@@ -40,6 +42,7 @@ def create_app():
     app.register_blueprint(document_bp)
     app.register_blueprint(request_bp)
     app.register_blueprint(registrar_bp)
+    app.register_blueprint(admin_bp)
 
     @app.route("/")
     def login_page():

@@ -92,7 +92,7 @@
 
                     <div style="height:1px;background:var(--bd);margin:6px 0"></div>
 
-                    <button class="nv" style="color:#d6392f" onclick="logoutAdmin()">
+                    <button class="nv" style="color:#d6392f" onclick="logoutStaff()">
                         <svg class="i" viewBox="0 0 24 24">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
@@ -151,15 +151,7 @@
                 <em class="bg" id="navPendingBadge">5</em>
             </a>
 
-            <a class="nv" href="request_page">
-                <svg class="i" viewBox="0 0 24 24">
-                    <path d="M9 11l3 3L22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                </svg>
-                <span>Request Page</span>
-            </a>
-
-            <a class="nv" href="scan.html">
+            <a class="nv" href="scan">
                 <svg class="i" viewBox="0 0 24 24">
                     <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>
                     <line x1="4" y1="12" x2="20" y2="12"/>
@@ -236,7 +228,6 @@
             <div class="chips" id="statusChips">
                 <button class="chip on" data-st="all" onclick="setStatusFilter('all', this)">All Requests</button>
                 <button class="chip" data-st="Pending" onclick="setStatusFilter('Pending', this)">Pending</button>
-                <button class="chip" data-st="In Review" onclick="setStatusFilter('In Review', this)">In Review</button>
                 <button class="chip" data-st="Approved" onclick="setStatusFilter('Approved', this)">Approved</button>
                 <button class="chip" data-st="Rejected" onclick="setStatusFilter('Rejected', this)">Rejected</button>
             </div>

@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+
+{% block title %}System Settings{% endblock %}
+
+{% block content %}
+<section>
+    <div class="admin-eyebrow">Administration</div>
+    <h1 class="admin-title">System Settings</h1>
+    <p class="admin-subtitle">
+        Configure the supported RegiTrack system preferences.
+    </p>
+</section>
+
+<div id="settingsMessage" class="admin-message" hidden></div>
+
+<section class="admin-card" style="margin-top:24px;">
+    <div class="admin-topbar">
+        <div>
+            <h2 style="margin:0 0 6px;">General Configuration</h2>
+            <p class="admin-subtitle">
+                Current values are loaded from the system settings database.
+            </p>
+        </div>
+        <button class="admin-button secondary" type="button" id="refreshSettingsButton">
+            Refresh
+        </button>
+    </div>
+
+    <div id="settingsLoading" class="admin-muted" style="margin:20px 0;">
+        Loading system settings...
+    </div>
+
+    <form id="settingsForm" hidden>
+        <div class="admin-form-grid" style="margin-top:24px;">
+            <div>
+                <label for="systemName">System Name</label>
+                <input class="admin-input" id="systemName"
+                       type="text" maxlength="100" required>
+                <p class="admin-muted">Maximum 100 characters.</p>
+            </div>
+
+            <div>
+                <label for="processingPreference">Default Processing Preference</label>
+                <select class="admin-select" id="processingPreference" required>
+                    <option value="Within 1 week">Within 1 week</option>
+                    <option value="Within 2 weeks">Within 2 weeks</option>
+                    <option value="Within 3 weeks">Within 3 weeks</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="demoMode">Demo Mode</label>
+                <select class="admin-select" id="demoMode" required>
+                    <option value="true">Enabled</option>
+                    <option value="false">Disabled</option>
+                </select>
+                <p class="admin-muted">Controls the stored demo-mode preference.</p>
+            </div>
+
+            <div>
+                <label for="qrValidity">QR Token Validity (Days)</label>
+                <input class="admin-input" id="qrValidity"
+                       type="number" min="1" max="30" step="1" required>
+                <p class="admin-muted">Allowed range: 1 to 30 days.</p>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-top:24px;flex-wrap:wrap;">
+            <button class="admin-button" type="submit" id="saveSettingsButton">
+                Save Settings
+            </button>
+            <button class="admin-button secondary" type="button" id="reloadSettingsButton">
+                Discard Changes
+            </button>
+        </div>
+    </form>
+</section>
+
+<section class="admin-card" style="margin-top:20px;">
+    <h2 style="margin-top:0;">Configuration Information</h2>
+    <p class="admin-subtitle">
+        Changes are saved to the system settings database. Successful updates
+        are recorded in the administrative audit log.
+    </p>
+    <p class="admin-muted" id="settingsUpdatedAt">
+        Last updated information will appear here.
+    </p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin/settings.js') }}"></script>
+{% endblock %}

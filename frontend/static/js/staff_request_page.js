@@ -1567,3 +1567,43 @@ window.addEventListener('DOMContentLoaded', () => {
     setInterval(updateClock, 15000);
 
 })();
+
+
+// =========================================================
+// LOGOUT
+// =========================================================
+async function logoutStaff() {
+    try {
+        // Check whether the current session is authenticated
+        const authCheck = await fetch("/auth/me", {
+            method: "GET",
+            credentials: "same-origin"
+        });
+
+        if (!authCheck.ok) {
+            console.error("Session check failed:", authCheck.status);
+            alert("Your session has expired. Please log in again.");
+            window.location.href = "/";
+            return;
+        }
+
+        // Send logout request
+        const response = await fetch("/auth/logout", {
+            method: "POST",
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            window.location.href = "/";
+        } else {
+            console.error("Logout failed:", response.status, data);
+            alert("Unable to log out. Please try again.");
+        }
+
+    } catch (error) {
+        console.error("Logout error:", error);
+        alert("An error occurred while logging out.");
+    }
+}

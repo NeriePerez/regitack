@@ -1,0 +1,188 @@
+
+{% extends "admin/base.html" %}
+
+{% block title %}Analytics & Reporting{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_analytics.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= ANALYTICS DASHBOARD ================= -->
+
+<div class="hd">
+
+    <div>
+        <h1>Analytics &amp; Reporting</h1>
+        <p class="mu">
+            Visual reports and summaries of registrar operations
+            and document request activity.
+        </p>
+    </div>
+
+    <div class="hr">
+        <div class="chips" style="margin:0">
+            <button class="chip on" onclick="setDashRange('7D', this)">7D</button>
+            <button class="chip" onclick="setDashRange('30D', this)">30D</button>
+            <button class="chip" onclick="setDashRange('12M', this)">12M</button>
+        </div>
+    </div>
+
+    <div class="hr">
+        <button class="btn ol sm"
+                type="button"
+                id="exportAnalytics">
+            <span>Export CSV</span>
+        </button>
+    </div>
+
+</div>
+
+
+<div id="analyticsMessage"
+     class="admin-message"
+     hidden>
+</div>
+
+
+<div class="dash">
+
+    <!-- ================= PRIMARY KPI CARDS ================= -->
+
+    <div class="c12 stats" id="fullDashStats">
+
+        <!-- TOTAL REQUESTS -->
+        <div class="stat card">
+            <div class="ic">
+                <svg class="i" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16
+                            a2 2 0 0 0 2 2h12
+                            a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+            </div>
+
+            <div>
+                <b>—</b>
+                <span class="mu">Requests</span>
+            </div>
+
+            <em class="dl">—</em>
+        </div>
+
+        <!-- ACTIVE QUEUE -->
+        <div class="stat card">
+            <div class="ic w">
+                <svg class="i" viewBox="0 0 24 24">
+                    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                    <path d="M5.45 5.11L2 12v6
+                            a2 2 0 0 0 2 2h16
+                            a2 2 0 0 0 2-2v-6
+                            l-3.45-6.89A2 2 0 0 0 16.76 4H7.24
+                            a2 2 0 0 0-1.79 1.11z"/>
+                </svg>
+            </div>
+
+            <div>
+                <b>—</b>
+                <span class="mu">Active Queue</span>
+            </div>
+
+            <em class="dl warn">Live</em>
+        </div>
+
+        <!-- APPROVAL RATE -->
+        <div class="stat card">
+            <div class="ic">
+                <svg class="i" viewBox="0 0 24 24">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+
+            <div>
+                <b>—</b>
+                <span class="mu">Approval Rate</span>
+            </div>
+
+            <em class="dl">—</em>
+        </div>
+
+        <!-- AVERAGE PROCESSING TIME -->
+        <div class="stat card">
+            <div class="ic">
+                <svg class="i" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9"/>
+                    <polyline points="12 7 12 12 15 15"/>
+                </svg>
+            </div>
+
+            <div>
+                <b>—</b>
+                <span class="mu">Avg. Turnaround</span>
+            </div>
+
+            <em class="dl">—</em>
+        </div>
+
+    </div>
+
+
+    <!-- Bar Chart: Request Volume & Approvals -->
+        <div class="card c8">
+          <div class="sec">
+            <div>
+              <h2>Request Volume & Approval Trend</h2>
+              <p class="mu" id="dashChartSub">Monthly submitted vs. approved requests</p>
+            </div>
+            <div style="display:flex;gap:14px;font-size:12.5px;font-weight:700">
+              <span style="display:inline-flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:var(--g7);display:inline-block"></i>Submitted</span>
+              <span style="display:inline-flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:var(--or);display:inline-block"></i>Approved</span>
+            </div>
+          </div>
+          <svg id="dashBarChart" viewBox="0 0 640 240" style="width:100%;height:auto;overflow:visible"></svg>
+        </div>
+
+        <!-- Donut Chart: Breakdown by Request Type -->
+        <div class="card c4">
+          <div class="sec">
+            <h2>By Request Type</h2>
+            <span class="mu" style="font-size:12px">Share</span>
+          </div>
+          <div class="dn" id="dashDonutWrap"></div>
+          <div class="lg" id="dashDonutLegend"></div>
+        </div>
+
+        <!-- Live Admin Activity Feed -->
+        <div class="card c12">
+          <div class="sec">
+            <div>
+              <h2>Live Admin Feed</h2>
+              <p class="mu">Real-time approvals, reviews & student submissions</p>
+            </div>
+            <span class="lv">Live</span>
+          </div>
+          <div id="dashLiveFeed"></div>
+        </div>
+
+        <div class="card c12 flush" id="reportsCard">
+          <div class="sec"><div><h2>Reports</h2><p class="mu">Summaries of registrar operations and document request activity</p></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><select id="rptType" class="dinp" onchange="renderReport()"><option value="status">Requests by Status</option><option value="type">By Document Type</option><option value="daily">Daily Activity</option><option value="program">By Program</option><option value="fees">Fees Collected</option><option value="aging">Pending Request Aging</option><option value="qr">QR Pickup Passes</option></select><button class="btn ol sm" onclick="exportReport()"><span>Export CSV</span></button><button class="btn ol sm" onclick="window.print()"><span>Print</span></button></div></div>
+          <div style="overflow-x:auto"><table id="rptTable"></table></div>
+        </div>
+
+</div>
+
+{% endblock %}
+
+
+<!-- ================= PAGE JAVASCRIPT ================= -->
+
+{% block scripts %}
+
+<script src="{{ url_for('static', filename='js/admin_analytics.js') }}"></script>
+
+{% endblock %}

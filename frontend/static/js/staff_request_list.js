@@ -555,8 +555,9 @@ function openRequestPage(reqId) {
 
 function statusBadgeClass(st) {
     if (st === 'Pending') return 'p2';
-    if (st === 'In Review') return 'p3';
-    if (st === 'Approved') return 'p4';
+    if (st === 'Processing') return 'p3';
+    if (st === 'Ready for Pickup') return 'p4';
+    if (st === 'Released') return 'p4';
     if (st === 'Rejected') return 'pr';
 
     return 'p1';
@@ -1032,70 +1033,259 @@ function resetRequestFilters() {
 
 
 // ==========================================
+// DATABASE REQUEST LIST
+// ==========================================
+
+let DB_REQUESTS = [];
+
+// ==========================================
+// LOAD REQUESTS FROM DATABASE API
+// ==========================================
+
+async function loadRegistrarRequests() {
+    const tbody = document.getElementById('reqTableBody');
+
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align:center;padding:30px">
+                    Loading requests...
+                </td>
+            </tr>
+        `;
+    }
+
+    try {
+        const response = await fetch('/registrar/api/requests', {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Failed to load requests.');
+        }
+
+        DB_REQUESTS = data.requests || [];
+
+        populateRequestTypeFilter();
+        renderRequestList();
+
+        // Automatically apply URL filter when coming from dashboard.
+        applyRequestURLFilter();
+
+    } catch (error) {
+        console.error('Request list loading error:', error);
+
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align:center;padding:30px">
+                        Unable to load requests from the database.
+                    </td>
+                </tr>
+            `;
+        }
+
+        const count = document.getElementById('reqCountLabel');
+        if (count) count.textContent = 'Unable to load requests';
+    }
+}
+
+
+// ==========================================
+// POPULATE REQUEST TYPE DROPDOWN
+// ==========================================
+
+function populateRequestTypeFilter() {
+    const select = document.getElementById('filterType');
+    if (!select) return;
+
+    const types = [
+        ...new Set(DB_REQUESTS.map(r => r.document_name).filter(Boolean))
+    ].sort();
+
+    select.innerHTML = `
+        <option value="all">All Request Types</option>
+        ${types.map(type => `
+            <option value="${escapeHTML(type)}">
+                ${escapeHTML(type)}
+            </option>
+        `).join('')}
+    `;
+}
+
+
+// ==========================================
+// ESCAPE HTML
+// ==========================================
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
+
+// ==========================================
+// FORMAT DATABASE DATETIME
+// ==========================================
+
+function formatRequestDateTime(dateValue) {
+    if (!dateValue) {
+        return {
+            date: 'Unavailable',
+            time: ''
+        };
+    }
+
+    // SQL DATETIME: YYYY-MM-DD HH:MM:SS
+    // Interpreted as local time (the server/database's intended local time).
+    const date = new Date(String(dateValue).replace(' ', 'T'));
+
+    if (isNaN(date.getTime())) {
+        return {
+            date: 'Unavailable',
+            time: ''
+        };
+    }
+
+    return {
+        date: date.toLocaleDateString('en-PH', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        }),
+        time: date.toLocaleTimeString('en-PH', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        })
+    };
+}
+
+
+// ==========================================
+// GET INITIALS
+// ==========================================
+
+function getRequestInitials(fullName) {
+    return String(fullName || 'Unknown Student')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(word => word[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+}
+
+
+// ==========================================
+// STATUS FILTER GROUPS
+// ==========================================
+
+function matchesStatusFilter(status, filter) {
+    if (filter === 'all') return true;
+
+    // Pending includes Submitted and Processing.
+    if (filter === 'Pending') {
+        return ['Submitted', 'Processing'].includes(status);
+    }
+
+    // Approved includes Ready for Pickup and Released.
+    if (filter === 'Approved') {
+        return ['Ready for Pickup', 'Released'].includes(status);
+    }
+
+    if (filter === 'Rejected') {
+        return status === 'Rejected';
+    }
+
+    return status === filter;
+}
+
+
+// ==========================================
 // RENDER REQUEST LIST
 // ==========================================
 
 function renderRequestList() {
 
-    // UPDATE PENDING BADGE
-    const pending = REQUESTS.filter(r =>
-        r.status === 'Pending' ||
-        r.status === 'In Review'
+    // UPDATE NEEDS ACTION BADGE
+    const needsActionCount = DB_REQUESTS.filter(r =>
+        !['Ready for Pickup', 'Released', 'Rejected']
+            .includes(r.status)
     ).length;
 
-    const badge =
-        document.getElementById('navPendingBadge');
+    const badge = document.getElementById('navPendingBadge');
 
     if (badge) {
-        badge.textContent = pending;
+        badge.textContent = needsActionCount;
+        badge.style.display = needsActionCount > 0 ? '' : 'none';
     }
 
 
     // GET FILTER VALUES
-    const q =
-        document.getElementById('reqSearchInput').value.trim().toLowerCase();
+    const searchElement = document.getElementById('reqSearchInput');
+    const typeElement = document.getElementById('filterType');
+    const fromElement = document.getElementById('filterDateFrom');
+    const toElement = document.getElementById('filterDateTo');
 
-    const typeVal =
-        document.getElementById('filterType').value;
-
-    const fromDate =
-        document.getElementById('filterDateFrom').value;
-
-    const toDate =
-        document.getElementById('filterDateTo').value;
+    const q = searchElement ? searchElement.value.trim().toLowerCase() : '';
+    const typeVal = typeElement ? typeElement.value : 'all';
+    const fromDate = fromElement ? fromElement.value : '';
+    const toDate = toElement ? toElement.value : '';
 
 
-    // FILTER REQUESTS
-    const filtered = REQUESTS.filter(r => {
+    // FILTER DATABASE RECORDS
+    const filtered = DB_REQUESTS.filter(r => {
 
-        if (
-            statusFilter !== 'all' &&
-            r.status !== statusFilter
-        ) {
+        // STATUS FILTER
+        if (!matchesStatusFilter(r.status, statusFilter)) {
             return false;
         }
 
+        // REQUEST TYPE FILTER
         if (
             typeVal !== 'all' &&
-            r.type !== typeVal
+            r.document_name !== typeVal
         ) {
             return false;
         }
 
-        if (fromDate && r.date < fromDate) {
+        // DATE FILTER
+        const submittedDate = r.submitted_at
+            ? String(r.submitted_at).substring(0, 10)
+            : '';
+
+        if (fromDate && (!submittedDate || submittedDate < fromDate)) {
             return false;
         }
 
-        if (toDate && r.date > toDate) {
+        if (toDate && (!submittedDate || submittedDate > toDate)) {
             return false;
         }
 
-        if (q && !(
-            r.id.toLowerCase().includes(q) ||
-            r.studentName.toLowerCase().includes(q) ||
-            r.studentNo.toLowerCase().includes(q) ||
-            r.type.toLowerCase().includes(q)
-        )) {
+        // SEARCH FILTER
+        const searchableValues = [
+            r.reference_number,
+            r.request_id,
+            r.student_name,
+            r.student_number,
+            r.document_name
+        ];
+
+        const matchesSearch = searchableValues.some(value =>
+            String(value ?? '').toLowerCase().includes(q)
+        );
+
+        if (q && !matchesSearch) {
             return false;
         }
 
@@ -1103,28 +1293,39 @@ function renderRequestList() {
     });
 
 
-    // UPDATE COUNTER
-    document.getElementById('reqCountLabel').textContent =
-        `${filtered.length} request${filtered.length === 1 ? '' : 's'}`;
+    // UPDATE COUNTER AND TITLE
+    const countLabel = document.getElementById('reqCountLabel');
+    const title = document.getElementById('reqListTitle');
 
-    document.getElementById('reqListTitle').textContent =
-        statusFilter === 'all'
-            ? 'All Filtered Requests'
-            : `${statusFilter} Requests`;
+    if (countLabel) {
+        countLabel.textContent =
+            `${filtered.length} request${filtered.length === 1 ? '' : 's'}`;
+    }
+
+    if (title) {
+        const titles = {
+            all: 'All Requests',
+            Pending: 'Pending Requests',
+            'In Review': 'In Review Requests',
+            Approved: 'Approved Requests',
+            Rejected: 'Rejected Requests'
+        };
+
+        title.textContent = titles[statusFilter] || `${statusFilter} Requests`;
+    }
 
 
-    const tbody =
-        document.getElementById('reqTableBody');
+    // TABLE ELEMENTS
+    const tbody = document.getElementById('reqTableBody');
+    const empty = document.getElementById('reqEmptyState');
+    const wrap = document.getElementById('reqTableWrap');
 
-    const empty =
-        document.getElementById('reqEmptyState');
-
-    const wrap =
-        document.getElementById('reqTableWrap');
+    if (!tbody || !empty || !wrap) return;
 
 
     // EMPTY STATE
     if (!filtered.length) {
+        tbody.innerHTML = '';
         wrap.hidden = true;
         empty.hidden = false;
         return;
@@ -1134,63 +1335,162 @@ function renderRequestList() {
     empty.hidden = true;
 
 
-    // DISPLAY REQUESTS
-    tbody.innerHTML = filtered.map(r => `
-        <tr onclick="openRequestPage('${r.id}')">
+    // DISPLAY DATABASE RECORDS
+    tbody.innerHTML = filtered.map(r => {
 
-            <td>
-                <b style="color:var(--g7)">${r.id}</b>
-            </td>
+        const dateTime = formatRequestDateTime(r.submitted_at);
+        const initials = getRequestInitials(r.student_name);
 
-            <td>
-                <div class="who">
+        return `
+            <tr onclick="openRequestPage('${r.request_id}')">
 
-                    <div class="av">${r.initials}</div>
+                <td>
+                    <b style="color:var(--g7)">
+                        ${escapeHTML(r.reference_number || r.request_id)}
+                    </b>
+                </td>
 
-                    <div>
-                        <b style="display:block">${r.studentName}</b>
+                <td>
+                    <div class="who">
 
-                        <span class="mu" style="font-size:12px">
-                            ${r.studentNo}
-                        </span>
+                        <div class="av">
+                            ${escapeHTML(initials)}
+                        </div>
+
+                        <div>
+                            <b style="display:block">
+                                ${escapeHTML(r.student_name)}
+                            </b>
+
+                            <span class="mu" style="font-size:12px">
+                                ${escapeHTML(r.student_number || 'N/A')}
+                            </span>
+                        </div>
+
                     </div>
+                </td>
 
-                </div>
-            </td>
+                <td>
+                    <b>${escapeHTML(r.document_name || 'Unknown Document')}</b>
+                </td>
 
-            <td>
-                <b>${r.type}</b>
-            </td>
+                <td>
+                    <span>${escapeHTML(dateTime.date)}</span>
 
-            <td>
-                <span>${r.date}</span>
+                    <small class="mu" style="display:block;font-size:11.5px">
+                        ${escapeHTML(dateTime.time)}
+                    </small>
+                </td>
 
-                <small class="mu"
-                    style="display:block;font-size:11.5px">
-                    ${r.time}
-                </small>
-            </td>
+                <td>
+                    <b>₱${Number(r.total_fee || 0).toLocaleString('en-PH', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}</b>
+                </td>
 
-            <td>
-                <b>₱${r.fee}.00</b>
-            </td>
+                <td>
+                    <span class="pill ${statusBadgeClass(r.status === 'Submitted' ? 'Pending' : r.status)}">
+                        ${r.status === 'Submitted' ? 'Pending' : r.status}
+                    </span>
+                </td>
 
-            <td>
-                <span class="pill ${statusBadgeClass(r.status)}">
-                    ${r.status}
-                </span>
-            </td>
+                <td style="text-align:right">
+                    <button class="btn ol xs"
+                        onclick="event.stopPropagation();openRequestPage('${r.request_id}')">
+                        Inspect
+                    </button>
+                </td>
 
-            <td style="text-align:right">
-                <button class="btn ol xs"
-                    onclick="event.stopPropagation();openRequestPage('${r.id}')">
-                    Inspect
-                </button>
-            </td>
-
-        </tr>
-    `).join('');
+            </tr>
+        `;
+    }).join('');
 }
+
+
+// ==========================================
+// STATUS FILTER BUTTONS
+// ==========================================
+
+function setStatusFilter(status, button) {
+    statusFilter = status;
+
+    document.querySelectorAll('#statusChips .chip')
+        .forEach(chip => chip.classList.remove('on'));
+
+    if (button) {
+        button.classList.add('on');
+    }
+
+    renderRequestList();
+}
+
+
+// ==========================================
+// APPLY URL FILTER
+// ==========================================
+
+function applyRequestURLFilter() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+
+    if (!status) return;
+
+    const filterMap = {
+        All: 'all',
+        Pending: 'Pending',
+        'In Review': 'In Review',
+        Approved: 'Approved',
+        Rejected: 'Rejected'
+    };
+
+    const mappedStatus = filterMap[status];
+
+    if (!mappedStatus) return;
+
+    const button = document.querySelector(
+        `#statusChips .chip[data-st="${mappedStatus}"]`
+    );
+
+    if (button) {
+        setStatusFilter(mappedStatus, button);
+    }
+}
+
+
+// ==========================================
+// RESET FILTERS
+// ==========================================
+
+function resetRequestFilters() {
+
+    const search = document.getElementById('reqSearchInput');
+    const type = document.getElementById('filterType');
+    const preset = document.getElementById('filterDatePreset');
+    const from = document.getElementById('filterDateFrom');
+    const to = document.getElementById('filterDateTo');
+
+    if (search) search.value = '';
+    if (type) type.value = 'all';
+    if (preset) preset.value = 'all';
+    if (from) from.value = '';
+    if (to) to.value = '';
+
+    const allButton = document.querySelector(
+        '#statusChips .chip[data-st="all"]'
+    );
+
+    setStatusFilter('all', allButton);
+}
+
+
+// ==========================================
+// STATUS FILTER CHIP INITIALIZATION
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadRegistrarRequests();
+});
 
 
 // ==========================================
@@ -1211,43 +1511,85 @@ function logoutAdmin() {
 // ==========================================
 
 function exportCSV() {
+    const q = document.getElementById('reqSearchInput')?.value
+        .trim().toLowerCase() || '';
+
+    const typeVal = document.getElementById('filterType')?.value || 'all';
+    const fromDate = document.getElementById('filterDateFrom')?.value || '';
+    const toDate = document.getElementById('filterDateTo')?.value || '';
+
+    const filtered = DB_REQUESTS.filter(r => {
+        if (!matchesStatusFilter(r.status, statusFilter)) return false;
+
+        if (typeVal !== 'all' && r.document_name !== typeVal) return false;
+
+        const submittedDate = r.submitted_at
+            ? String(r.submitted_at).substring(0, 10)
+            : '';
+
+        if (fromDate && (!submittedDate || submittedDate < fromDate)) return false;
+        if (toDate && (!submittedDate || submittedDate > toDate)) return false;
+
+        const searchableValues = [
+            r.reference_number,
+            r.request_id,
+            r.student_name,
+            r.student_number,
+            r.document_name
+        ];
+
+        if (q && !searchableValues.some(value =>
+            String(value ?? '').toLowerCase().includes(q)
+        )) {
+            return false;
+        }
+
+        return true;
+    });
+
+    if (!filtered.length) {
+        toast('No requests to export.');
+        return;
+    }
+
     const headers = [
-        'Request ID',
+        'Reference Number',
         'Student Name',
-        'Student No',
-        'Type',
-        'Date',
+        'Student Number',
+        'Document',
+        'Date Submitted',
         'Fee',
         'Status'
     ];
 
-    const rows = REQUESTS.map(r => [
-        r.id,
-        `"${r.studentName}"`,
-        r.studentNo,
-        `"${r.type}"`,
-        r.date,
-        r.fee,
+    const rows = filtered.map(r => [
+        r.reference_number || r.request_id,
+        r.student_name,
+        r.student_number,
+        r.document_name,
+        r.submitted_at,
+        r.toatl_fee,
         r.status
-    ].join(','));
+    ]);
 
-    const blob = new Blob(
-        [[headers.join(','), ...rows].join('\n')],
-        { type: 'text/csv' }
-    );
+    const csv = [headers, ...rows]
+        .map(row => row.map(value =>
+            `"${String(value ?? '').replace(/"/g, '""')}"`
+        ).join(','))
+        .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csv], {
+        type: 'text/csv;charset=utf-8;'
+    });
 
     const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
 
-    const a = document.createElement('a');
-
-    a.href = url;
-    a.download = 'regitrack_requests_export.csv';
-
-    a.click();
+    link.href = url;
+    link.download = 'registrar_requests.csv';
+    link.click();
 
     URL.revokeObjectURL(url);
-
-    toast('Exported requests to CSV');
 }
 
 
@@ -1351,3 +1693,43 @@ window.addEventListener('DOMContentLoaded', () => {
     setInterval(updateClock, 15000);
 
 })();
+
+
+// =========================================================
+// LOGOUT
+// =========================================================
+async function logoutStaff() {
+    try {
+        // Check whether the current session is authenticated
+        const authCheck = await fetch("/auth/me", {
+            method: "GET",
+            credentials: "same-origin"
+        });
+
+        if (!authCheck.ok) {
+            console.error("Session check failed:", authCheck.status);
+            alert("Your session has expired. Please log in again.");
+            window.location.href = "/";
+            return;
+        }
+
+        // Send logout request
+        const response = await fetch("/auth/logout", {
+            method: "POST",
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            window.location.href = "/";
+        } else {
+            console.error("Logout failed:", response.status, data);
+            alert("Unable to log out. Please try again.");
+        }
+
+    } catch (error) {
+        console.error("Logout error:", error);
+        alert("An error occurred while logging out.");
+    }
+}
